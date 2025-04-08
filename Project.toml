@@ -1,0 +1,4 @@
+name = "Optics"
+uuid = "89b863ff-e300-4bce-ad05-f7fc2d7deab0"
+authors = ["Kohei KONISHI <konishi2911@icloud.com>"]
+version = "0.1.0"
