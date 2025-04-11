@@ -81,8 +81,10 @@ function calc_refract!(rays::Vector{SingleRay}, wall::Wall)
     if p !== nothing
         n = [0.0, 0.0]
         push!(rays, SingleRay(p, n, nothing))
+        return rays
+    else
+        return rays
     end
-    return rays
 end
 
 
