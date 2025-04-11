@@ -77,7 +77,7 @@ end
 function calc_refract!(rays::Vector{SingleRay}, wall::Wall)
     last_ray = rays[end]
     # Check if the ray intersects with the wall
-    p = intersect_point(last_ray, wall)
+    p = intersect_point(last_ray, Segment(wall.sp, wall.ep))
     if p !== nothing
         n = [0.0, 0.0]
         push!(rays, SingleRay(p, n, nothing))
