@@ -32,10 +32,6 @@ struct Wall <: AbstractOpticalElement
     ep::Vector{Float64}
 end
 
-function Wall(sp::Vector{Float64}, ep::Vector{Float64})
-    return Wall(sp, ep)
-end
-
 function PlanoConvexLens(diameter::Float64, carvature_radius::Float64, thickness::Float64, refractive_index::Float64; is_mirrored::Bool = false)
     center = thickness - carvature_radius
     edge_thickness = thickness - carvature_radius + sqrt(carvature_radius^2 - (0.5 * diameter)^2)
