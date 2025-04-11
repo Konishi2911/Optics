@@ -1,6 +1,8 @@
 using Plots
 
-abstract type AbstractLens end
+abstract type AbstractOpticalElement end
+
+abstract type AbstractLens <: AbstractOpticalElement end
 
 struct PlanoConvexLens <: AbstractLens
     diameter::Float64
@@ -24,6 +26,15 @@ struct PlanoConcaveLens <: AbstractLens
     is_mirrored::Bool
 end
 
+## A wall absorbing rays
+struct Wall <: AbstractOpticalElement
+    sp::Vector{Float64}
+    ep::Vector{Float64}
+end
+
+function Wall(sp::Vector{Float64}, ep::Vector{Float64})
+    return Wall(sp, ep)
+end
 
 function PlanoConvexLens(diameter::Float64, carvature_radius::Float64, thickness::Float64, refractive_index::Float64; is_mirrored::Bool = false)
     center = thickness - carvature_radius
@@ -136,4 +147,13 @@ function geom2d(lens::PlanoConcaveLens, offset::Vector{Float64} = [0.0, 0.0])
     end
 
     return geom_fn
+end
+
+function geom2d(wall::Wall)
+    geom_fn = (t) -> begin
+        x = wall.sp[1] + (wall.ep[1] - wall.sp[1]) * t
+        y = wall.sp[2] + (wall.ep[2] - wall.sp[2]) * t
+        return x, y
+    end
+    return geom_fn    
 end

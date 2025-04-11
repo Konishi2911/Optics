@@ -1,7 +1,7 @@
 module Optics
 
 include("Geom.jl")
-include("Lens.jl")
+include("Elements.jl")
 include("Rays.jl")
 
 function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Vector{Float64} = [0.0, 0.0])
@@ -72,6 +72,17 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
         new_medium = offset_ray.medium === nothing ? l : nothing
         push!(rays, SingleRay(p_o, d, new_medium))
     end
+end
+
+function calc_refract!(rays::Vector{SingleRay}, wall::Wall)
+    last_ray = rays[end]
+    # Check if the ray intersects with the wall
+    p = intersect_point(last_ray, wall)
+    if p !== nothing
+        n = [0.0, 0.0]
+        push!(rays, SingleRay(p, n, nothing))
+    end
+    return rays
 end
 
 
