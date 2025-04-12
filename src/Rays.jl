@@ -111,13 +111,14 @@ function plot!(rays::Vector{SingleRay}, extend_length::Float64 = 100.0)
     )
 end
 
-function plot!(axis, rays::Vector{SingleRay}, extend_length::Float64 = 100.0)
+function plot!(axis, rays::Vector{SingleRay}, extend_length::Float64 = 100.0; linewidth=2)
     for i in 1:length(rays)-1
         Makie.lines!(
             axis,
             [rays[i].origin[1], rays[i+1].origin[1]], 
             [rays[i].origin[2], rays[i+1].origin[2]], 
             color=:blue,
+            linewidth=linewidth,
         )
     end
     Makie.lines!(
@@ -125,5 +126,6 @@ function plot!(axis, rays::Vector{SingleRay}, extend_length::Float64 = 100.0)
         [rays[end].origin[1], rays[end].origin[1] + extend_length * rays[end].direction[1]], 
         [rays[end].origin[2], rays[end].origin[2] + extend_length * rays[end].direction[2]], 
         color=:blue,
+        linewidth=linewidth,
     )
 end
