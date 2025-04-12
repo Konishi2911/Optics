@@ -49,8 +49,16 @@ function intersect_point(ray::SingleRay, arc::Arc)
     theta1 = atan(pi1[2] - arc.center[2], pi1[1] - arc.center[1])
     theta2 = atan(pi2[2] - arc.center[2], pi2[1] - arc.center[1])
 
+    if arc.start_angle > pi || arc.end_angle > pi 
+        if theta1 < 0
+            theta1 += 2 * pi
+        end
+        if theta2 < 0
+            theta2 += 2 * pi
+        end
+    end
+
     if t1 > 0 && t2 > 0
-        # Sort the angles and points
         if arc.start_angle < theta1 < arc.end_angle && 
             arc.start_angle < theta2 < arc.end_angle
 
@@ -59,23 +67,23 @@ function intersect_point(ray::SingleRay, arc::Arc)
             else
                 return pi2
             end
-        elseif theta1 > arc.start_angle
+        elseif arc.start_angle < theta1 < arc.end_angle
             return pi1
-        elseif theta2 < arc.end_angle
+        elseif arc.start_angle < theta2 < arc.end_angle
             return pi2
         else
             return nothing
         end
     elseif t1 > 0
         # Only t1 is valid
-        if theta1 > arc.start_angle && theta1 < arc.end_angle
+        if arc.start_angle < theta1 < arc.end_angle
             return pi1
         else
             return nothing
         end
     elseif t2 > 0
         # Only t2 is valid
-        if theta2 > arc.start_angle && theta2 < arc.end_angle
+        if arc.start_angle < theta2 < arc.end_angle
             return pi2
         else
             return nothing
