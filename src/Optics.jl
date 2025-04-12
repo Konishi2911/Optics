@@ -5,7 +5,7 @@ include("Elements.jl")
 include("Rays.jl")
 
 struct OpticalSystem
-    lenses::Vector{(AbstractLens, Vector{Float64})}
+    lenses::Vector{Tuple{AbstractLens, Vector{Float64}}}
     walls::Vector{Wall}
 end
 
