@@ -62,8 +62,7 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
     # Returns the refracted ray
 
     for i in os.lenses |> eachindex
-        lens = os.lenses[i]
-        lens_offset = os.lens_pos[i]
+        (lens, lens_offset) = os.lenses[i]
 
         # Analyze the ray refraction
         for j in rays |> eachindex
