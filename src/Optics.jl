@@ -14,7 +14,7 @@ function plot!(ax, os::OpticalSystem)
     # Plot the optical system
     # ax: Plots.Plot
     # os: OpticalSystem
-    t = 0:0.01:100
+    t = 0:0.01:1
     for (lens, pos) in os.lenses
         f = Optics.geom2d(lens, pos)
         f_x = [p[1] for p in f.(t)]
