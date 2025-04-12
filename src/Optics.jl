@@ -4,6 +4,86 @@ include("Geom.jl")
 include("Elements.jl")
 include("Rays.jl")
 
+struct OpticalSystem
+    lenses::Vector{AbstractLens}
+    lens_pos::Vector{Float64}
+    walls::Vector{Wall}
+end
+
+
+function plot!(ax, os::OpticalSystem)
+    # Plot the optical system
+    # ax: Plots.Plot
+    # os: OpticalSystem
+    for i in os.lenses |> eachindex
+        lens = os.lenses[i]
+        lens_offset = os.lens_pos[i]
+        f = Optics.geom2d(lens, lens_offset)
+        f_x = [p[1] for p in f.(t)]
+        f_y = [p[2] for p in f.(t)]
+        lines!(ax, f_x, f_y, label="lens", color=:red)
+    end
+    for i in os.walls |> eachindex
+        w = Optics.geom2d(os.walls[i])
+        w_x = [p[1] for p in w.(t)]
+        w_y = [p[2] for p in w.(t)]
+        lines!(ax, w_x, w_y, label="wall", color=:gray)
+    end
+end
+
+function analyze_rays(source::PointSource, os::OpticalSystem, n_rays::Int = 100)
+    # Calculate the refraction of a ray through a lens
+    # r: PointSource
+    # l: AbstractLens
+    # lens_offset: offset of the lens center from the origin
+    # Returns the refracted ray
+
+    rays = []
+    for i in n_rays
+        # Generate a random ray from the source
+        angle = rand() * 2 * π
+        direction = [cos(angle), sin(angle)]
+        ray = [SingleRay(source.position, direction, nothing)]
+        push!(rays, ray)
+    end
+
+    # Analyze the rays through the optical system
+    analyze_rays!(rays, os)
+
+    return rays
+end
+
+
+
+
+function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
+    # Calculate the refraction of a ray through a lens
+    # r: Vector{SingleRay}
+    # l: AbstractLens
+    # lens_offset: offset of the lens center from the origin
+    # Returns the refracted ray
+
+    for i in os.lenses |> eachindex
+        lens = os.lenses[i]
+        lens_offset = os.lens_pos[i]
+
+        # Analyze the ray refraction
+        for j in rays |> eachindex
+            Optics.calc_refract!(rays[j], lens, lens_offset)
+        end
+    end
+
+    # Check if the ray crosses the wall
+    for k in os.walls |> eachindex
+        wall = os.walls[k]
+
+        for j in rays |> eachindex
+            Optics.calc_refract!(rays[j], wall)
+        end
+    end
+end
+
+
 function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Vector{Float64} = [0.0, 0.0])
     # Calculate the refraction of a ray through a lens
     # r: Vector{SingleRay}

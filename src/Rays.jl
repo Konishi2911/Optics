@@ -9,6 +9,10 @@ struct SingleRay
     medium::Union{AbstractLens, Nothing}
 end
 
+struct PointSource
+    position::Vector{Float64}
+end
+
 function intersect_point(ray::SingleRay, seg::Segment)
     q1 = seg.p1 - ray.origin
     q2 = seg.p2 - ray.origin
