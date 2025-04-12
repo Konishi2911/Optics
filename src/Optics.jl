@@ -15,6 +15,7 @@ function plot!(ax, os::OpticalSystem)
     # Plot the optical system
     # ax: Plots.Plot
     # os: OpticalSystem
+    t = 0:0.01:100
     for i in os.lenses |> eachindex
         lens = os.lenses[i]
         lens_offset = os.lens_pos[i]
