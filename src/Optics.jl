@@ -5,8 +5,7 @@ include("Elements.jl")
 include("Rays.jl")
 
 struct OpticalSystem
-    lenses::Vector{AbstractLens}
-    lens_pos::Vector{Float64}
+    lenses::Vector{(AbstractLens, Vector{Float64})}
     walls::Vector{Wall}
 end
 
@@ -16,16 +15,14 @@ function plot!(ax, os::OpticalSystem)
     # ax: Plots.Plot
     # os: OpticalSystem
     t = 0:0.01:100
-    for i in os.lenses |> eachindex
-        lens = os.lenses[i]
-        lens_offset = os.lens_pos[i]
-        f = Optics.geom2d(lens, lens_offset)
+    for (lens, pos) in os.lenses
+        f = Optics.geom2d(lens, pos)
         f_x = [p[1] for p in f.(t)]
         f_y = [p[2] for p in f.(t)]
         lines!(ax, f_x, f_y, label="lens", color=:red)
     end
-    for i in os.walls |> eachindex
-        w = Optics.geom2d(os.walls[i])
+    for wall in os.walls
+        w = Optics.geom2d(wall)
         w_x = [p[1] for p in w.(t)]
         w_y = [p[2] for p in w.(t)]
         lines!(ax, w_x, w_y, label="wall", color=:gray)
