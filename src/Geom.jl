@@ -28,8 +28,8 @@ function AsphericCurve(diameter::Float64, coeffs::Vector{Float64}, conic_constan
     return AsphericCurve(diameter, 0.0, coeffs, conic_constant, radius, is_mirrored)
 end
 
-function AsphericCurve(curve::AsphericCurve, offset::Float64)
-    return AsphericCurve(curve.diameter, offset, curve.coeffs, curve.conic_constant, curve.radius, curve.is_mirrored)
+function AsphericCurve(curve::AsphericCurve, offset::Float64; is_mirrored::Bool = curve.is_mirrored)
+    return AsphericCurve(curve.diameter, offset, curve.coeffs, curve.conic_constant, curve.radius, is_mirrored)
 end
 
 

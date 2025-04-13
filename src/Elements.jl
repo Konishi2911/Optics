@@ -28,10 +28,8 @@ end
 struct AsphericConvexLens <: AbstractLens
     diameter::Float64
     thickness::Float64
-    t1::Float64
-    t2::Float64
-    s1_func::Function
-    s2_func::Function
+    s1::AsphericCurve
+    s2::AsphericCurve
     refractive_index::Float64
 
     elements::Vector{AbstractGeometricElement}
@@ -139,16 +137,14 @@ function AsphericConvexLens(diameter::Float64, thickness::Float64, s1::AsphericC
 
     elements = [
         Segment([0, 0.5 * diameter], [edge_thickness, 0.5 * diameter]),
-        AsphericCurve(s2.diameter, s2.coeffs, s2.conic_constant, s2.radius, is_mirrored = is_mirrored),
+        AsphericCurve(s2, thickness - t1, is_mirrored = is_mirrored),
         Segment([edge_thickness, -0.5 * diameter], [0.0, -0.5 * diameter]),
-        AsphericCurve(s1.diameter, s1.coeffs, s1.conic_constant, s1.radius, is_mirrored = is_mirrored),
+        AsphericCurve(s1, -t1, is_mirrored = is_mirrored),
     ]
 
     return AsphericConvexLens(
         diameter,
         thickness,
-        t1, 
-        t2,
         s1_func,
         s2_func,
         refractive_index,
@@ -242,10 +238,10 @@ function geom2d(lens::AsphericConvexLens, offset::Vector{Float64} = [0.0, 0.0])
             return geom2d(lens.elements[1])(s) .+ offset
         elseif 0.25 <= t < 0.5
             s = 1 - (t - 0.25) / 0.25
-            return geom2d(lens.elements[2])(s) .+ [lens.thickness - lens.t1, 0.0] .+ offset
+            return geom2d(lens.elements[2])(s) .+ offset
         elseif 0.5 <= t < 0.75
             s = (t - 0.5) / 0.25
-            return geom2d(lens.elements[3])(s) .+ [-lens.t1, 0.0] .+ offset
+            return geom2d(lens.elements[3])(s) .+ offset
         elseif 0.75 <= t <= 1
             s = (t - 0.75) / 0.25
             return geom2d(lens.elements[4])(s) .+ offset
