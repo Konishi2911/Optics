@@ -29,7 +29,7 @@ function plot!(ax, os::OpticalSystem)
     end
 end
 
-function trace(source::PointSource, os::OpticalSystem, n_rays::Int = 100)
+function rays(source::PointSource, n_rays::Int = 100)
     # Calculate the refraction of a ray through a lens
     # r: PointSource
     # l: AbstractLens
@@ -44,12 +44,6 @@ function trace(source::PointSource, os::OpticalSystem, n_rays::Int = 100)
         ray = [SingleRay(source.position, direction, nothing)]
         push!(rays, ray)
     end
-
-    # Analyze the rays through the optical system
-    for ray in rays
-        analyze_rays!(ray, os)
-    end
-
     return rays
 end
 
