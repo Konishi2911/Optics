@@ -163,6 +163,28 @@ function geom2d(lens::PlanoConvexLens, offset::Vector{Float64} = [0.0, 0.0])
     return geom_fn
 end
 
+function geom2d(lens::BiConvexLens, offset::Vector{Float64} = [0.0, 0.0])
+    geom_fn = (t) -> begin
+        if 0 <= t < 0.25
+            s = t / 0.25
+            return geom2d(lens.elements[1])(s) .+ offset
+        elseif 0.25 <= t < 0.5
+            s = (t - 0.25) / 0.25
+            return geom2d(lens.elements[2])(s) .+ offset
+        elseif 0.5 <= t < 0.75
+            s = (t - 0.5) / 0.25
+            return geom2d(lens.elements[3])(s) .+ offset
+        elseif 0.75 <= t <= 1
+            s = (t - 0.75) / 0.25
+            return geom2d(lens.elements[4])(s) .+ offset
+        else
+            error("t must be in the range [0, 1]")
+        end
+    end
+
+    return geom_fn
+end
+
 function geom2d(lens::PlanoConcaveLens, offset::Vector{Float64} = [0.0, 0.0])
     geom_fn = (t) -> begin
         if 0 <= t < 0.25
