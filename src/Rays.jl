@@ -1,4 +1,5 @@
 using LinearAlgebra
+using Optim
 using Plots
 using Makie
 
@@ -93,6 +94,17 @@ function intersect_point(ray::SingleRay, arc::Arc)
         else
             return nothing
         end
+    else
+        return nothing
+    end
+end
+
+function intersect_point(ray::SingleRay, curve::AsphericCurve)
+    f = geom2d(curve)
+    g(s) = f(s[1]) - (ray.origin + s[2] * ray.direction)
+    res = Optim.optimize(g, [0.0, 0.0])
+    if res.f_val < 1e-8
+        return res.minimizer[1]
     else
         return nothing
     end
