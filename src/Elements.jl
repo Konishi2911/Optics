@@ -76,9 +76,14 @@ function PlanoConvexLens(diameter::Float64, carvature_radius::Float64, thickness
     )
 end
 
-function BiConvexLens(diameter::Float64, carvature_radius1::Float64, carvature_radius2::Float64, thickness::Float64, refractive_index::Float64)
+function BiConvexLens(diameter::Float64, carvature_radius1::Float64, carvature_radius2::Float64, thickness::Float64, refractive_index::Float64; is_mirrored::Bool = false)
     theta1 = asin(0.5 * diameter / carvature_radius1)
     theta2 = asin(0.5 * diameter / carvature_radius2)
+
+    if is_mirrored
+        theta1, theta2 = theta2, theta1
+    end
+
     theta_s1 = -theta1
     theta_e1 = theta1
     theta_s2 = pi - theta2
