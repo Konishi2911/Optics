@@ -121,23 +121,33 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
         dot_nd = dot(offset_ray.direction, n)
         cross_nd = offset_ray.direction[1] * n[2] - offset_ray.direction[2] * n[1]
         theta_i = atan(cross_nd, dot_nd)
-        theta_r = asin(sin(theta_i) * r_index_i / r_index_o)
-        d_theta = theta_r - theta_i
+        if sin(theta_i) * r_index_i / r_index_o > 1.0
+            d = [0.0, 0.0]
+            p_o = [
+                p_i[1] + lens_offset[1],
+                p_i[2] + lens_offset[2]
+            ]
+            push!(rays, SingleRay(p_o, 0, nothing))
+            break
+        else 
+            theta_r = asin(sin(theta_i) * r_index_i / r_index_o)
+            d_theta = theta_r - theta_i
 
-        # Calculate the new direction of the ray
-        d = [
-            offset_ray.direction[1] * cos(d_theta) + offset_ray.direction[2] * sin(d_theta),
-            -offset_ray.direction[1] * sin(d_theta) + offset_ray.direction[2] * cos(d_theta)
-        ]
+            # Calculate the new direction of the ray
+            d = [
+                offset_ray.direction[1] * cos(d_theta) + offset_ray.direction[2] * sin(d_theta),
+                -offset_ray.direction[1] * sin(d_theta) + offset_ray.direction[2] * cos(d_theta)
+            ]
 
-        # Calculate the new origin of the ray
-        p_o = [
-            p_i[1] + lens_offset[1],
-            p_i[2] + lens_offset[2]
-        ] + d * 1e-6  # small offset to avoid numerical issues
+            # Calculate the new origin of the ray
+            p_o = [
+                p_i[1] + lens_offset[1],
+                p_i[2] + lens_offset[2]
+            ] + d * 1e-6  # small offset to avoid numerical issues
 
-        new_medium = offset_ray.medium === nothing ? l : nothing
-        push!(rays, SingleRay(p_o, d, new_medium))
+            new_medium = offset_ray.medium === nothing ? l : nothing
+            push!(rays, SingleRay(p_o, d, new_medium))
+        end
     end
 end
 
