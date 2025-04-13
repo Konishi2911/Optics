@@ -15,6 +15,16 @@ struct PlanoConvexLens <: AbstractLens
     is_mirrored::Bool
 end
 
+struct BiConvexLens <: AbstractLens
+    diameter::Float64
+    carvature_radius1::Float64
+    carvature_radius2::Float64
+    thickness::Float64
+    refractive_index::Float64
+
+    elements::Vector{AbstractGeometricElement}
+end
+
 struct PlanoConcaveLens <: AbstractLens
     diameter::Float64
     carvature_radius::Float64
@@ -63,6 +73,36 @@ function PlanoConvexLens(diameter::Float64, carvature_radius::Float64, thickness
         refractive_index,
         elements,
         is_mirrored
+    )
+end
+
+function BiConvexLens(diameter::Float64, carvature_radius1::Float64, carvature_radius2::Float64, thickness::Float64, refractive_index::Float64)
+    theta_s1 = -asin(0.5 * diameter / carvature_radius1)
+    theta_e1 = asin(0.5 * diameter / carvature_radius1)
+    theta_s2 = pi - asin(0.5 * diameter / carvature_radius2)
+    theta_e2 = pi + asin(0.5 * diameter / carvature_radius2)
+
+    t1 = carvature_radius1 * (1 - cos(theta_s1))
+    t2 = carvature_radius2 * (1 - cos(theta_s2))
+    edge_thickness = thickness - t1 - t2
+
+    center1 = t1 + edge_thickness - carvature_radius1
+    center2 = carvature_radius2 - t2
+
+    elements = [
+        Segment([0, -0.5 * diameter], [edge_thickness, -0.5 * diameter]),
+        Arc([center1, 0], carvature_radius1, theta_s1, theta_e1),
+        Segment([edge_thickness, 0.5 * diameter], [0, 0.5 * diameter]),
+        Arc([center2, 0], carvature_radius2, theta_s2, theta_e2),
+    ]
+
+    return BiConvexLens(
+        diameter,
+        carvature_radius1,
+        carvature_radius2,
+        thickness,
+        refractive_index,
+        elements
     )
 end
 
