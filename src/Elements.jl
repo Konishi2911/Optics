@@ -145,8 +145,8 @@ function AsphericConvexLens(diameter::Float64, thickness::Float64, s1::AsphericC
     return AsphericConvexLens(
         diameter,
         thickness,
-        s1_func,
-        s2_func,
+        s1,
+        s2,
         refractive_index,
         elements
     )
