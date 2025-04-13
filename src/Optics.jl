@@ -127,7 +127,7 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
                 p_i[1] + lens_offset[1],
                 p_i[2] + lens_offset[2]
             ]
-            push!(rays, SingleRay(p_o, 0, nothing))
+            push!(rays, SingleRay(p_o, d, nothing))
             break
         else 
             theta_r = asin(sin(theta_i) * r_index_i / r_index_o)
