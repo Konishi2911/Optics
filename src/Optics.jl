@@ -37,7 +37,7 @@ function rays(source::PointSource, n_rays::Int = 100)
     # Returns the refracted ray
 
     rays = []
-    for i in n_rays
+    for i in 1:n_rays
         # Generate a random ray from the source
         angle = rand() * 2 * π
         direction = [cos(angle), sin(angle)]
@@ -46,8 +46,6 @@ function rays(source::PointSource, n_rays::Int = 100)
     end
     return rays
 end
-
-
 
 
 function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
