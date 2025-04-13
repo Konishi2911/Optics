@@ -1,4 +1,5 @@
 using Optim
+using ForwardDiff
 
 abstract type AbstractGeometricElement end
 
@@ -88,8 +89,8 @@ end
 
 function normal(curve::AsphericCurve, t::Float64)
     f = geom2d(curve)
-    gradient = Optim.gradient(f, t)
-    tan = gradient / norm(gradient)
+    gradient(x) = ForwardDiff.derivative(f, x)
+    tan = gradient(t) / norm(gradient(t))
     return [-tan[2], tan[1]]
 end
 
