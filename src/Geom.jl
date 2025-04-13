@@ -60,7 +60,7 @@ function geom2d(curve::AsphericCurve)
         s = (t - 0.5) * curve.diameter
 
         y = s
-        x = s^2 / (r * (1 + sqrt(1 - (1 + k) * s^2 / r^2)))
+        x = s^2 / (r * (1 + sqrt(max(1 - (1 + k) * s^2 / r^2, 0.0))))
         for i in 1:length(curve.coeffs)
             x += curve.coeffs[i] * s^(2*(i+1))
         end
