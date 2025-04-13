@@ -89,8 +89,12 @@ end
 
 function normal(curve::AsphericCurve, t::Float64)
     f = geom2d(curve)
-    gradient(x) = ForwardDiff.derivative(f, x)
-    tan = gradient(t) / norm(gradient(t))
+    fx(t) = f(t)[1]
+    fy(t) = f(t)[2]
+
+    gradx(t) = ForwardDiff.derivative(fx, t)
+    grady(t) = ForwardDiff.derivative(fy, t)
+    tan = [gradx(t), grady(t)] / norm([gradx(t), grady(t)])
     return [-tan[2], tan[1]]
 end
 
