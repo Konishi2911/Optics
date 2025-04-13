@@ -65,18 +65,14 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
         (lens, lens_offset) = os.lenses[i]
 
         # Analyze the ray refraction
-        for j in rays |> eachindex
-            Optics.calc_refract!(rays[j], lens, lens_offset)
-        end
+        Optics.calc_refract!(rays, lens, lens_offset)
     end
 
     # Check if the ray crosses the wall
     for k in os.walls |> eachindex
         wall = os.walls[k]
 
-        for j in rays |> eachindex
-            Optics.calc_refract!(rays[j], wall)
-        end
+        Optics.calc_refract!(rays, wall)
     end
 end
 
