@@ -65,9 +65,9 @@ function geom2d(curve::AsphericCurve)
         end
 
         if curve.is_mirrored
-            return -x + offset, y
+            return -x + curve.offset, y
         else
-            return x + offset, y
+            return x + curve.offset, y
         end
     end
     return fn    
