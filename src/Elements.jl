@@ -77,13 +77,15 @@ function PlanoConvexLens(diameter::Float64, carvature_radius::Float64, thickness
 end
 
 function BiConvexLens(diameter::Float64, carvature_radius1::Float64, carvature_radius2::Float64, thickness::Float64, refractive_index::Float64)
-    theta_s1 = -asin(0.5 * diameter / carvature_radius1)
-    theta_e1 = asin(0.5 * diameter / carvature_radius1)
-    theta_s2 = pi - asin(0.5 * diameter / carvature_radius2)
-    theta_e2 = pi + asin(0.5 * diameter / carvature_radius2)
+    theta1 = asin(0.5 * diameter / carvature_radius1)
+    theta2 = asin(0.5 * diameter / carvature_radius2)
+    theta_s1 = -theta1
+    theta_e1 = theta1
+    theta_s2 = pi - theta2
+    theta_e2 = pi + theta2
 
-    t1 = carvature_radius1 * (1 - cos(theta_s1))
-    t2 = carvature_radius2 * (1 - cos(theta_s2))
+    t1 = carvature_radius1 * (1 - cos(theta1))
+    t2 = carvature_radius2 * (1 - cos(theta2))
     edge_thickness = thickness - t1 - t2
 
     center1 = t1 + edge_thickness - carvature_radius1
