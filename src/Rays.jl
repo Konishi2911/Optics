@@ -106,7 +106,8 @@ function intersect_point(ray::SingleRay, curve::AsphericCurve)
     res = Optim.optimize(g, [0.0, 0.0])
     if Optim.minimum(res) < 1e-6
         t_min = Optim.minimizer(res)[1]
-        if 0.0 <= t_min <= 1.0
+        s_min = Optim.minimizer(res)[2]
+        if 0.0 <= t_min <= 1.0 && s_min >= 0.0
             return [x for x in f(t_min)]
         else 
             return nothing
