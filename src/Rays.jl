@@ -102,8 +102,9 @@ end
 function intersect_point(ray::SingleRay, curve::AsphericCurve)
     f = geom2d(curve)
     g(s) = norm([x for x in f(s[1])] - (ray.origin + s[2] * ray.direction))
+
     res = Optim.optimize(g, [0.0, 0.0])
-    if Optim.minimum(res) < 1e-8
+    if Optim.minimum(res) < 1e-6
         t_min = Optim.minimizer(res)[1]
         if 0.0 <= t_min <= 1.0
             return [x for x in f(t_min)]
