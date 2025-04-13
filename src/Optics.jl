@@ -121,7 +121,7 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
         dot_nd = dot(offset_ray.direction, n)
         cross_nd = offset_ray.direction[1] * n[2] - offset_ray.direction[2] * n[1]
         theta_i = atan(cross_nd, dot_nd)
-        if sin(theta_i) * r_index_i / r_index_o > 1.0
+        if abs(sin(theta_i) * r_index_i / r_index_o) > 1.0
             d = [0.0, 0.0]
             p_o = [
                 p_i[1] + lens_offset[1],
