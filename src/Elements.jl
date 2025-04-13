@@ -25,6 +25,18 @@ struct BiConvexLens <: AbstractLens
     elements::Vector{AbstractGeometricElement}
 end
 
+struct AsphericConvexLens <: AbstractLens
+    diameter::Float64
+    thickness::Float64
+    t1::Float64
+    t2::Float64
+    s1_func::Function
+    s2_func::Function
+    refractive_index::Float64
+
+    elements::Vector{AbstractGeometricElement}
+end
+
 struct PlanoConcaveLens <: AbstractLens
     diameter::Float64
     carvature_radius::Float64
@@ -113,6 +125,37 @@ function BiConvexLens(diameter::Float64, carvature_radius1::Float64, carvature_r
     )
 end
 
+function AsphericConvexLens(diameter::Float64, thickness::Float64, s1::AsphericCurve, s2::AsphericCurve, refractive_index::Float64; is_mirrored::Bool = false)
+    if is_mirrored
+        s1, s2 = s2, s1
+    end
+
+    s1_func = geom2d(s1)
+    s2_func = geom2d(s2)
+
+    t1 = s1_func(1.0)[1] |> abs
+    t2 = s2_func(1.0)[1] |> abs
+    edge_thickness = thickness - t1 - t2
+
+    elements = [
+        Segment([0, 0.5 * diameter], [edge_thickness, 0.5 * diameter]),
+        AsphericCurve(s2.diameter, s2.coeffs, s2.conic_constant, s2.radius, is_mirrored = is_mirrored),
+        Segment([edge_thickness, -0.5 * diameter], [0.0, -0.5 * diameter]),
+        AsphericCurve(s1.diameter, s1.coeffs, s1.conic_constant, s1.radius, is_mirrored = is_mirrored),
+    ]
+
+    return AsphericConvexLens(
+        diameter,
+        thickness,
+        t1, 
+        t2,
+        s1_func,
+        s2_func,
+        refractive_index,
+        elements
+    )
+end
+
 function PlanoConcaveLens(diameter::Float64, carvature_radius::Float64, center_thickness::Float64, refractive_index::Float64; is_mirrored::Bool = false)
     center = center_thickness + carvature_radius
     theta = asin(0.5 * diameter / carvature_radius)
@@ -189,6 +232,27 @@ function geom2d(lens::BiConvexLens, offset::Vector{Float64} = [0.0, 0.0])
         end
     end
 
+    return geom_fn
+end
+
+function geom2d(lens::AsphericConvexLens, offset::Vector{Float64} = [0.0, 0.0])
+    geom_fn = (t) -> begin
+        if 0 <= t < 0.25
+            s = t / 0.25
+            return geom2d(lens.elements[1])(s) .+ offset
+        elseif 0.25 <= t < 0.5
+            s = 1 - (t - 0.25) / 0.25
+            return geom2d(lens.elements[2])(s) .+ [lens.thickness - lens.t1, 0.0] .+ offset
+        elseif 0.5 <= t < 0.75
+            s = (t - 0.5) / 0.25
+            return geom2d(lens.elements[3])(s) .+ [-lens.t1, 0.0] .+ offset
+        elseif 0.75 <= t <= 1
+            s = (t - 0.75) / 0.25
+            return geom2d(lens.elements[4])(s) .+ offset
+        else
+            error("t must be in the range [0, 1]")
+        end
+    end
     return geom_fn
 end
 

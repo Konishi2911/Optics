@@ -14,6 +14,19 @@ struct Arc <: AbstractGeometricElement
     end_angle::Float64
 end
 
+struct AsphericCurve <: AbstractGeometricElement
+    diameter::Float64
+    coeffs::Vector{Float64}
+    conic_constant::Float64
+    radius::Float64
+
+    is_mirrored::Bool
+end
+
+function AsphericCurve(diameter::Float64, coeffs::Vector{Float64}, conic_constant::Float64, radius::Float64; is_mirrored::Bool = false)
+    return AsphericCurve(diameter, coeffs, conic_constant, radius, is_mirrored)
+end
+
 
 function geom2d(seg::Segment)
     fn = (t) -> begin
@@ -30,6 +43,27 @@ function geom2d(arc::Arc)
         x = arc.center[1] + arc.radius * cos(theta)
         y = arc.center[2] + arc.radius * sin(theta)
         return x, y
+    end
+    return fn    
+end
+
+function geom2d(curve::AsphericCurve)
+    fn = (t) -> begin
+        r = curve.radius
+        k = curve.conic_constant
+        s = (t - 0.5) * curve.diameter
+
+        y = s
+        x = s^2 / (r * (1 + sqrt(1 - (1 + k) * s^2 / r^2)))
+        for i in 1:length(curve.coeffs)
+            x += curve.coeffs[i] * s^(2 * (i+1))
+        end
+
+        if curve.is_mirrored
+            return -x, y
+        else
+            return x, y
+        end
     end
     return fn    
 end
