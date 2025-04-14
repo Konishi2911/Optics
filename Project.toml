@@ -1,7 +1,7 @@
 name = "Optics"
 uuid = "89b863ff-e300-4bce-ad05-f7fc2d7deab0"
 authors = ["Kohei KONISHI <konishi2911@icloud.com>"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
