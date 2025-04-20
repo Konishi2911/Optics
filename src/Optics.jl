@@ -70,12 +70,12 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
             p = intersect_point(last_ray, Segment(wall.sp, wall.ep))
             if p !== nothing
                 d = norm(p - last_ray.position)
-            end
 
-            # Update the closest wall
-            if d < d_wall
-                d_wall = d
-                p_wall = p
+                # Update the closest wall
+                if d < d_wall
+                    d_wall = d
+                    p_wall = p
+                end
             end
         end
 
