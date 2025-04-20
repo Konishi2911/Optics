@@ -66,7 +66,7 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
     end
 
     # Check if the ray crosses the wall
-    for i in rays[:end - 1] |> eachindex
+    for i in 1:length(rays) - 1
         curr_ray = rays[i]
         next_ray = rays[i + 1]
 
