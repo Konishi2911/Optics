@@ -60,13 +60,13 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
 
     for i in os.lenses |> eachindex
         (lens, lens_offset) = os.lenses[i]
+        last_ray = rays[end]
 
         # Calculate a position where ray crosses the wall
         d_wall = Inf
         p_wall = nothing
         for k in os.walls |> eachindex
             wall = os.walls[k]
-            last_ray = rays[end]
             p = intersect_point(last_ray, Segment(wall.sp, wall.ep))
             if p !== nothing
                 d = norm(p - last_ray.origin)
@@ -85,10 +85,13 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
         if p_wall === nothing && n_newrays == 0
             # If the ray does not cross eather wall and lens, do nothing
         elseif p_wall !== nothing && n_newrays == 0
-            # If the ray crosses the wall, add a new absorbed ray at the wall position
+            # If the ray crosses the wall, add a new absorbed ray at the wall position,
             n_rays = length(rays)
             deleteat!(rays, n_rays - n_newrays + 1:n_rays)
             rays[end] = SingleRay(p_wall, [0.0, 0.0], nothing)
+
+            # end the loop because the ray is absorbed
+            break
         elseif p_wall === nothing && n_newrays > 0
             # If the ray crosses the lens, add a new ray at the lens position. 
             #   (do nothing because the ray is already added)
@@ -102,6 +105,9 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
                 n_rays = length(rays)
                 deleteat!(rays, n_rays - n_newrays + 1:n_rays)
                 rays[end] = SingleRay(p_wall, [0.0, 0.0], nothing)
+
+                # end the loop because the ray is absorbed
+                break
             end
         end
     end
