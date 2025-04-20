@@ -75,7 +75,7 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
             wall = os.walls[k]
             p = intersect_point(curr_ray, Segment(wall.sp, wall.ep))
             if p !== nothing
-                d = norm(p - curr.origin)
+                d = norm(p - curr_ray.origin)
                 d_ray = norm(next_ray.origin - curr_ray.origin)
 
                 # if the ray crosses the wall before the ray crosses the lens
