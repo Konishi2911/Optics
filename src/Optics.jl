@@ -87,8 +87,8 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
         elseif p_wall !== nothing && n_newrays == 0
             # If the ray crosses the wall, add a new absorbed ray at the wall position,
             n_rays = length(rays)
-            deleteat!(rays, n_rays - n_newrays + 1:n_rays)
-            rays[end] = SingleRay(p_wall, [0.0, 0.0], nothing)
+            deleteat!(rays, n_rays - n_newrays:n_rays)
+            push!(rays, SingleRay(p_wall, [0.0, 0.0], nothing))
 
             # end the loop because the ray is absorbed
             break
@@ -96,20 +96,26 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
             # If the ray crosses the lens, add a new ray at the lens position. 
             #   (do nothing because the ray is already added)
         else 
-            # If the ray crosses both the lens and the wall, check which one is closer
+            # If the ray crosses both the lenses and the wall, check which one is closer
             d_lens = norm(rays[end - n_newrays + 1].origin - last_ray.origin)
             if d_lens < d_wall
                 # If the lens is closer, do nothing
             else
                 # If the wall is closer, add a new absorbed ray at the wall position
                 n_rays = length(rays)
-                deleteat!(rays, n_rays - n_newrays + 1:n_rays)
-                rays[end] = SingleRay(p_wall, [0.0, 0.0], nothing)
+                deleteat!(rays, n_rays - n_newrays:n_rays)
+                push!(rays, SingleRay(p_wall, [0.0, 0.0], nothing))
 
                 # end the loop because the ray is absorbed
                 break
             end
         end
+    end
+
+    # Check if the ray crosses the wall
+    for k in os.walls |> eachindex
+        wall = os.walls[k]
+        Optics.calc_intersect!(rays, wall)
     end
 end
 
@@ -199,7 +205,7 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
     return n_addrays;
 end
 
-function calc_refract!(rays::Vector{SingleRay}, wall::Wall)
+function calc_intersect!(rays::Vector{SingleRay}, wall::Wall)
     last_ray = rays[end]
     # Check if the ray intersects with the wall
     p = intersect_point(last_ray, Segment(wall.sp, wall.ep))
