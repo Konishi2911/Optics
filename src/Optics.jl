@@ -39,7 +39,10 @@ function rays(source::PointSource, n_rays::Int = 100)
     rays = []
     for i in 1:n_rays
         # Generate a random ray from the source
-        angle = 2 * π / n_rays * (i - 1)
+        theta_s = source.beam_angle[1];
+        theta_e = source.beam_angle[2];
+
+        angle = theta_s + (theta_e - theta_s) * (i - 1) / (n_rays - 1);
         direction = [cos(angle), sin(angle)]
         ray = [SingleRay(source.position, direction, nothing)]
         push!(rays, ray)

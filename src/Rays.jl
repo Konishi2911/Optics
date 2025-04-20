@@ -12,6 +12,12 @@ end
 
 struct PointSource
     position::Vector{Float64}
+    beam_angle::Tuple{Float64, Float64}
+end
+
+function PointSource(position::Vector{Float64})
+    beam_angle = (0.0, 2pi)
+    PointSource(position, beam_angle)
 end
 
 function intersect_point(ray::SingleRay, seg::Segment)
