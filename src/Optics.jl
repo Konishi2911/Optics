@@ -70,20 +70,33 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
         curr_ray = rays[i]
         next_ray = rays[i + 1]
 
+        d_ray = norm(next_ray.origin - curr_ray.origin)
+
         # Calculate a position where ray crosses the wall
+        d_wall = Inf
+        p_wall = nothing
         for k in os.walls |> eachindex
             wall = os.walls[k]
+
             p = intersect_point(curr_ray, Segment(wall.sp, wall.ep))
             if p !== nothing
                 d = norm(p - curr_ray.origin)
-                d_ray = norm(next_ray.origin - curr_ray.origin)
 
                 # if the ray crosses the wall before the ray crosses the lens
-                if d < d_ray
-                    rays[i + 1] = SingleRay(p, [0.0, 0.0], nothing)
-                    deleteat!(rays, i + 2:length(rays))
+                if d < d_wall && d < d_ray
+                    d_wall = d
+                    p_wall = p
                 end
             end
+        end
+
+        if p_wall !== nothing
+            # If the ray crosses the wall, add a new terminal ray
+            n = [0.0, 0.0]
+            rays[i + 1] = SingleRay(p_wall, n, nothing)
+            deleteat!(rays, i+2:length(rays))
+            
+            break
         end
     end
 
