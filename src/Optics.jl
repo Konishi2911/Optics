@@ -69,7 +69,7 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
             last_ray = rays[end]
             p = intersect_point(last_ray, Segment(wall.sp, wall.ep))
             if p !== nothing
-                d = norm(p - last_ray.position)
+                d = norm(p - last_ray.origin)
 
                 # Update the closest wall
                 if d < d_wall
@@ -94,7 +94,7 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
             #   (do nothing because the ray is already added)
         else 
             # If the ray crosses both the lens and the wall, check which one is closer
-            d_lens = norm(rays[end - n_newrays + 1].position - last_ray.position)
+            d_lens = norm(rays[end - n_newrays + 1].origin - last_ray.origin)
             if d_lens < d_wall
                 # If the lens is closer, do nothing
             else
