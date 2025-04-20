@@ -61,15 +61,49 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
     for i in os.lenses |> eachindex
         (lens, lens_offset) = os.lenses[i]
 
+        # Calculate a position where ray crosses the wall
+        d_wall = Inf
+        p_wall = nothing
+        for k in os.walls |> eachindex
+            wall = os.walls[k]
+            last_ray = rays[end]
+            p = intersect_point(last_ray, Segment(wall.sp, wall.ep))
+            if p !== nothing
+                d = norm(p - last_ray.position)
+            end
+
+            # Update the closest wall
+            if d < d_wall
+                d_wall = d
+                p_wall = p
+            end
+        end
+
         # Analyze the ray refraction
-        Optics.calc_refract!(rays, lens, lens_offset)
-    end
+        n_newrays = Optics.calc_refract!(rays, lens, lens_offset)
 
-    # Check if the ray crosses the wall
-    for k in os.walls |> eachindex
-        wall = os.walls[k]
-
-        Optics.calc_refract!(rays, wall)
+        if p_wall === nothing && n_newrays == 0
+            # If the ray does not cross eather wall and lens, do nothing
+        elseif p_wall !== nothing && n_newrays == 0
+            # If the ray crosses the wall, add a new absorbed ray at the wall position
+            n_rays = length(rays)
+            deleteat!(rays, n_rays - n_newrays + 1:n_rays)
+            rays[end] = SingleRay(p_wall, [0.0, 0.0], nothing)
+        elseif p_wall === nothing && n_newrays > 0
+            # If the ray crosses the lens, add a new ray at the lens position. 
+            #   (do nothing because the ray is already added)
+        else 
+            # If the ray crosses both the lens and the wall, check which one is closer
+            d_lens = norm(rays[end - n_newrays + 1].position - last_ray.position)
+            if d_lens < d_wall
+                # If the lens is closer, do nothing
+            else
+                # If the wall is closer, add a new absorbed ray at the wall position
+                n_rays = length(rays)
+                deleteat!(rays, n_rays - n_newrays + 1:n_rays)
+                rays[end] = SingleRay(p_wall, [0.0, 0.0], nothing)
+            end
+        end
     end
 end
 
@@ -79,8 +113,9 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
     # r: Vector{SingleRay}
     # l: AbstractLens
     # lens_offset: offset of the lens center from the origin
-    # Returns the refracted ray
+    # Returns the number of added rays
 
+    n_addrays = 0
     while true
         offset_ray = SingleRay(rays[end].origin - lens_offset, rays[end].direction, rays[end].medium)
 
@@ -125,12 +160,14 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
         cross_nd = offset_ray.direction[1] * n[2] - offset_ray.direction[2] * n[1]
         theta_i = atan(cross_nd, dot_nd)
         if abs(sin(theta_i) * r_index_i / r_index_o) > 1.0
+            # Total internal reflection
             d = [0.0, 0.0]
             p_o = [
                 p_i[1] + lens_offset[1],
                 p_i[2] + lens_offset[2]
             ]
             push!(rays, SingleRay(p_o, d, nothing))
+            n_addrays += 1
             break
         else 
             theta_r = asin(sin(theta_i) * r_index_i / r_index_o)
@@ -150,8 +187,10 @@ function calc_refract!(rays::Vector{SingleRay}, l::AbstractLens, lens_offset::Ve
 
             new_medium = offset_ray.medium === nothing ? l : nothing
             push!(rays, SingleRay(p_o, d, new_medium))
+            n_addrays += 1
         end
     end
+    return n_addrays;
 end
 
 function calc_refract!(rays::Vector{SingleRay}, wall::Wall)
