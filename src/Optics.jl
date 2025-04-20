@@ -60,59 +60,34 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
 
     for i in os.lenses |> eachindex
         (lens, lens_offset) = os.lenses[i]
-        last_ray = rays[end]
-
-        # Calculate a position where ray crosses the wall
-        d_wall = Inf
-        p_wall = nothing
-        for k in os.walls |> eachindex
-            wall = os.walls[k]
-            p = intersect_point(last_ray, Segment(wall.sp, wall.ep))
-            if p !== nothing
-                d = norm(p - last_ray.origin)
-
-                # Update the closest wall
-                if d < d_wall
-                    d_wall = d
-                    p_wall = p
-                end
-            end
-        end
 
         # Analyze the ray refraction
-        n_newrays = Optics.calc_refract!(rays, lens, lens_offset)
+        Optics.calc_refract!(rays, lens, lens_offset)
+    end
 
-        if p_wall === nothing && n_newrays == 0
-            # If the ray does not cross eather wall and lens, do nothing
-        elseif p_wall !== nothing && n_newrays == 0
-            # If the ray crosses the wall, add a new absorbed ray at the wall position,
-            n_rays = length(rays)
-            deleteat!(rays, n_rays - n_newrays + 1:n_rays)
-            push!(rays, SingleRay(p_wall, [0.0, 0.0], nothing))
+    # Check if the ray crosses the wall
+    for i in rays[:end - 1] |> eachindex
+        curr_ray = rays[i]
+        next_ray = rays[i + 1]
 
-            # end the loop because the ray is absorbed
-            break
-        elseif p_wall === nothing && n_newrays > 0
-            # If the ray crosses the lens, add a new ray at the lens position. 
-            #   (do nothing because the ray is already added)
-        else 
-            # If the ray crosses both the lenses and the wall, check which one is closer
-            d_lens = norm(rays[end - n_newrays + 1].origin - last_ray.origin)
-            if d_lens < d_wall
-                # If the lens is closer, do nothing
-            else
-                # If the wall is closer, add a new absorbed ray at the wall position
-                n_rays = length(rays)
-                deleteat!(rays, n_rays - n_newrays + 1:n_rays)
-                push!(rays, SingleRay(p_wall, [0.0, 0.0], nothing))
+        # Calculate a position where ray crosses the wall
+        for k in os.walls |> eachindex
+            wall = os.walls[k]
+            p = intersect_point(curr_ray, Segment(wall.sp, wall.ep))
+            if p !== nothing
+                d = norm(p - curr.origin)
+                d_ray = norm(next_ray.origin - curr_ray.origin)
 
-                # end the loop because the ray is absorbed
-                break
+                # if the ray crosses the wall before the ray crosses the lens
+                if d < d_ray
+                    rays[i + 1] = SingleRay(p, [0.0, 0.0], nothing)
+                    deleteat!(rays, i + 2:length(rays))
+                end
             end
         end
     end
 
-    # Check if the ray crosses the wall
+    # Check if the free ray crosses the wall
     for k in os.walls |> eachindex
         wall = os.walls[k]
         Optics.calc_intersect!(rays, wall)
