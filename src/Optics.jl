@@ -87,7 +87,7 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
         elseif p_wall !== nothing && n_newrays == 0
             # If the ray crosses the wall, add a new absorbed ray at the wall position,
             n_rays = length(rays)
-            deleteat!(rays, n_rays - n_newrays:n_rays)
+            deleteat!(rays, n_rays - n_newrays + 1:n_rays)
             push!(rays, SingleRay(p_wall, [0.0, 0.0], nothing))
 
             # end the loop because the ray is absorbed
@@ -103,7 +103,7 @@ function analyze_rays!(rays::Vector{SingleRay}, os::OpticalSystem)
             else
                 # If the wall is closer, add a new absorbed ray at the wall position
                 n_rays = length(rays)
-                deleteat!(rays, n_rays - n_newrays:n_rays)
+                deleteat!(rays, n_rays - n_newrays + 1:n_rays)
                 push!(rays, SingleRay(p_wall, [0.0, 0.0], nothing))
 
                 # end the loop because the ray is absorbed
